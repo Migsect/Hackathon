@@ -1,0 +1,14 @@
+body, html {
+	width: 100%;
+	padding: 0px;
+	margin: 0px;
+}
+div.game {
+	padding: 0px;
+	margin: 0px;
+	position: absolute;
+	width: 100%;
+	box-sizing: border-box;
+	top: 0px;
+	bottom: 0px;
+}
