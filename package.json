@@ -28,6 +28,7 @@
     "consolidate": "^0.14.1",
     "cookie-parser": "~1.4.3",
     "craftjs": "^0.1.0",
+    "craftyjs": "^0.7.1",
     "debug": "~2.2.0",
     "express": "^4.14.0",
     "express-session": "^1.14.1",
