@@ -13,6 +13,11 @@ var Game = function(containerId)
   });
 };
 
+window.onresize = function()
+{
+  Crafty.init(window.screenWidth, window.screenHeight);
+};
+
 Object.defineProperties(Game.prototype,
 {
   start:
