@@ -16070,6 +16070,11 @@
 	  Crafty.init(window.screenWidth, window.screenHeight);
 	};
 
+	function getRandomInt(min, max)
+	{
+	  return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
 	Object.defineProperties(Game.prototype,
 	{
 	  addPathElement:
@@ -16089,9 +16094,73 @@
 	  {
 	    value: function()
 	    {
-	      var elements = ["straight", "straight", "straight"];
-
+	      Crafty.init(window.innerWidth, window.innerHeight);
+	      var gameLength = 2000;
+	      //Crafty.viewport.scale(window.innerHeight / this.unit);
+	      var elements = ["straight", "straight", "straight", "straight"];
+	      for (var i = 0; i < (gameLength); i++)
+	      {
+	        var x = getRandomInt(0, 6);
+	        var y = getRandomInt(0, 6);
+	        if (x === 0 || x == 4)
+	          elements.push("straight");
+	        if (x === 0 || y === 0)
+	          elements.push("bridgeHack");
+	        if (x == 1 || x == 5)
+	          elements.push("drops");
+	        if (x == 1 || y == 1)
+	          elements.push("wallHack");
+	        if (x == 2 || x == 6)
+	          elements.push("pitfall");
+	        if (x == 2 && y == 2)
+	          elements.push("attack");
+	        if (x == 3)
+	          elements.push("wall");
+	        if (x == 3 && y == 3)
+	          elements.push("assist");
+	      }
 	      var self = this;
+	      Crafty.c('CustomControls',
+	      {
+	        __move:
+	        {
+	          left: false,
+	          right: false,
+	          up: false,
+	          down: false
+	        },
+	        _speed: null,
+	        init: function()
+	        {
+	          this._speed = {
+	            base: 0,
+	            x: 0,
+	            y: 0
+	          };
+	        },
+	        CustomControls: function(speed)
+	        {
+	          if (speed) this._speed.base = speed;
+	          var move = this.__move;
+	          this.bind('KeyDown', function()
+	          {
+	            //move the player in a direction depending on the booleans
+	            if (this.isDown("RIGHT_ARROW")) this._speed.x = this._speed.base;
+	            if (this.isDown("LEFT_ARROW")) this._speed.x = -this._speed.base;
+	            if (this.isDown("UP_ARROW")) this._speed.y = -this._speed.base;
+	            if (this.isDown("DOWN_ARROW")) this._speed.y = this._speed.base;
+	          });
+	          this.bind('KeyUp', function()
+	          {
+	            //move the player in a direction depending on the booleans
+	            if (!this.isDown("RIGHT_ARROW")) this._speed.x = 0;
+	            if (!this.isDown("LEFT_ARROW")) this._speed.x = 0;
+	            if (!this.isDown("UP_ARROW")) this._speed.y = 0;
+	            if (!this.isDown("DOWN_ARROW")) this._speed.y = 0;
+	          });
+	          return this;
+	        }
+	      });
 	      Crafty.defineScene("level", function()
 	      {
 	        Crafty.background("black");
@@ -16103,24 +16172,30 @@
 	          element.render(self.unit);
 	          currentLocation += element.width * self.unit;
 	        });
-	        var player1 = Crafty.e("Player, 2D, Canvas, Color, Solid, Fourway, Collision")
+	        var player1 = Crafty.e("Player, 2D, Canvas, Color, Fourway, Solid, Gravity, Fourway, Collision")
 	          .attr(
 	          {
 	            x: 0,
-	            y: 0,
-	            w: 30,
-	            h: 30
+	            y: 50,
+	            w: 75,
+	            h: 75
 	          })
-	          .color("green")
-	          .fourway(200)
-	          .bind("Moved", function()
+	          //.CustomControls(400)
+	          .checkHits("Wall")
+	          .color("white")
+	          .fourway(400)
+	          .gravity("Floor")
+	          .gravityConst(1000)
+	          .bind("Moved", function(e)
 	          {
 	            if (this.x >= (self.unit / 2))
 	            {
 	              Crafty.viewport.x = (this.x - (self.unit / 2)) * -1;
 	            }
 	          });
+
 	      });
+	      //});
 
 	    }
 	  },
@@ -16283,7 +16358,7 @@
 	var StraightElement = function(location)
 	{
 	  var self = this;
-	  PathElement.call(self, "straight", 0.2, location);
+	  PathElement.call(self, "straight", 0.4, location);
 	};
 
 	StraightElement.prototype = Object.create(PathElement.prototype);
@@ -16300,7 +16375,7 @@
 	      Crafty.e("Top, 2D, Canvas, Color, Collision")
 	        .attr(
 	        {
-	          x: 0,
+	          x: this.location,
 	          y: 0,
 	          w: unit * this.width,
 	          h: unit * 0.2
@@ -16309,7 +16384,7 @@
 	      Crafty.e("Middle, 2D, Canvas, Color")
 	        .attr(
 	        {
-	          x: 0,
+	          x: this.location,
 	          y: unit * 0.2,
 	          w: unit * this.width,
 	          h: unit * 0.6
@@ -16317,7 +16392,7 @@
 	      Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
 	        .attr(
 	        {
-	          x: 0,
+	          x: this.location,
 	          y: unit * 0.8,
 	          w: unit * this.width,
 	          h: unit * 0.2
@@ -16327,11 +16402,512 @@
 	  }
 	});
 
+	var DropElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "drops", 0.4, location);
+	};
+
+	DropElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(DropElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: DropElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+	      Crafty.e("Floor, 2D, Canvas, Solid, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8,
+	          w: (unit * this.width) / 2.5,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	    }
+	  }
+	});
+
+	var PitfallElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "pitfall", 0.4, location);
+	};
+
+	PitfallElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(PitfallElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: PitfallElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+	      Crafty.e("Floor, 2D, Canvas, Solid, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8,
+	          w: (unit * this.width) / 3,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	    }
+	  }
+	});
+
+	var WallElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "wall", 0.4, location);
+	};
+
+	WallElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(WallElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: WallElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+	      Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Wall, 2D, Canvas, Solid, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8 - ((unit * this.width) / 7),
+	          w: (unit * this.width) / 10,
+	          h: unit * 0.5,
+	          z: 0
+	        })
+	        .color("blue");
+	    }
+	  }
+	});
+
+	var BridgeHackElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "bridgeHack", 0.4, location);
+	};
+
+	BridgeHackElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(BridgeHackElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: BridgeHackElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+
+	      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.55,
+	          w: (unit * this.width) / 10,
+	          h: unit * 0.5
+	        })
+	        .color("yellow")
+	        .bind("KeyDown", function(e)
+	        {
+	          if (e.key == Crafty.keys.SPACE)
+	          {
+	            var answer = window.prompt("Default Question", "Answer");
+	            Crafty.pause();
+	            if (answer !== null)
+	            {
+	              document.getElementById("game").innerHTML = "yay4";
+	              Crafty.pause();
+
+	              Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	                .attr(
+	                {
+	                  x: this.location - 200,
+	                  y: unit * 0.8,
+	                  w: (unit * this.width),
+	                  h: unit * 0.2
+	                })
+	                .color("white");
+	            }
+	          }
+	        });
+	      //sign.On
+
+	    }
+	  }
+	});
+
+	var WallHackElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "wallHack", 0.4, location);
+	};
+
+	WallHackElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(WallHackElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: WallHackElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+	      Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Wall, 2D, Canvas, Solid, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8 - ((unit * this.width)),
+	          w: (unit * this.width) / 10,
+	          h: unit * 0.5,
+	          z: 0
+	        })
+	        .color("blue");
+	      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 500,
+	          w: (unit * this.width) / 10,
+	          h: 500
+	        })
+	        .color("yellow")
+	        .bind("KeyDown", function(e)
+	        {
+	          if (e.key == Crafty.keys.SPACE)
+	          {
+	            var answer = window.prompt("Default Question", "Answer");
+	            Crafty.pause();
+	            if (answer !== null)
+	            {
+	              document.getElementById("game").innerHTML = "yay3";
+	              Crafty.pause();
+
+	              Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	                .attr(
+	                {
+	                  x: this.location,
+	                  y: unit * 0.8,
+	                  w: (unit * this.width),
+	                  h: unit * 0.2
+	                })
+	                .color("green");
+	            }
+	          }
+	        });
+	    }
+	  }
+	});
+
+	var AttackElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "attack", 0.4, location);
+	};
+
+	AttackElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(AttackElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: AttackElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+	      Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.55,
+	          w: (unit * this.width) / 10,
+	          h: unit * 0.5
+	        })
+	        .color("yellow")
+	        .bind("KeyDown", function(e)
+	        {
+	          if (e.key == Crafty.keys.SPACE)
+	          {
+	            var answer = window.prompt("Default Question", "Answer");
+	            Crafty.pause();
+	            if (answer !== null)
+	            {
+	              document.getElementById("game").innerHTML = "yay2";
+	              Crafty.pause();
+
+	              Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	                .attr(
+	                {
+	                  x: this.location,
+	                  y: unit * 0.8,
+	                  w: (unit * this.width),
+	                  h: unit * 0.2
+	                })
+	                .color("green");
+	            }
+	          }
+	        });
+	    }
+	  }
+	});
+
+	var AssistElement = function(location)
+	{
+	  var self = this;
+	  PathElement.call(self, "assist", 0.4, location);
+	};
+
+	AssistElement.prototype = Object.create(PathElement.prototype);
+	Object.defineProperties(AssistElement.prototype,
+	{
+	  constructor:
+	  {
+	    value: AssistElement
+	  },
+	  render:
+	  {
+	    value: function(unit)
+	    {
+	      Crafty.e("Top, 2D, Canvas, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: 0,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Middle, 2D, Canvas, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.2,
+	          w: unit * this.width,
+	          h: unit * 0.6
+	        });
+	      Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.8,
+	          w: unit * this.width,
+	          h: unit * 0.2
+	        })
+	        .color("green");
+	      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+	        .attr(
+	        {
+	          x: this.location,
+	          y: unit * 0.55,
+	          w: (unit * this.width) / 10,
+	          h: unit * 0.5
+	        })
+	        .color("yellow")
+	        .bind("KeyDown", function(e)
+	        {
+	          if (e.key == Crafty.keys.SPACE)
+	          {
+	            var answer = window.prompt("Default Question", "Answer");
+	            Crafty.pause();
+	            if (answer !== null)
+	            {
+	              document.getElementById("game").innerHTML = "yay";
+	              Crafty.pause();
+	              for (var i = 0; i < 8; i++) // maake next 8 straight 
+	              {
+	                Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+	                  .attr(
+	                  {
+	                    x: this.location,
+	                    y: unit * 0.8,
+	                    w: (unit * this.width) * 8,
+	                    h: unit * 0.2
+	                  })
+	                  .color("green");
+	              }
+	            }
+	          }
+	        });
+	    }
+	  }
+	});
+
 	Object.defineProperties(module.exports,
 	{
 	  straight:
 	  {
 	    value: StraightElement
+	  },
+	  drops:
+	  {
+	    value: DropElement
+	  },
+	  pitfall:
+	  {
+	    value: PitfallElement
+	  },
+	  wall:
+	  {
+	    value: WallElement
+	  },
+	  bridgeHack:
+	  {
+	    value: BridgeHackElement
+	  },
+	  wallHack:
+	  {
+	    value: WallHackElement
+	  },
+	  attack:
+	  {
+	    value: AttackElement
+	  },
+	  assist:
+	  {
+	    value: AssistElement
 	  }
 	});
 

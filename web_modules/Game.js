@@ -32,6 +32,11 @@ window.onresize = function()
   Crafty.init(window.screenWidth, window.screenHeight);
 };
 
+function getRandomInt(min, max)
+{
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 Object.defineProperties(Game.prototype,
 {
   addPathElement:
@@ -51,9 +56,73 @@ Object.defineProperties(Game.prototype,
   {
     value: function()
     {
-      var elements = ["straight", "straight", "straight"];
-
+      Crafty.init(window.innerWidth, window.innerHeight);
+      var gameLength = 2000;
+      //Crafty.viewport.scale(window.innerHeight / this.unit);
+      var elements = ["straight", "straight", "straight", "straight"];
+      for (var i = 0; i < (gameLength); i++)
+      {
+        var x = getRandomInt(0, 6);
+        var y = getRandomInt(0, 6);
+        if (x === 0 || x == 4)
+          elements.push("straight");
+        if (x === 0 || y === 0)
+          elements.push("bridgeHack");
+        if (x == 1 || x == 5)
+          elements.push("drops");
+        if (x == 1 || y == 1)
+          elements.push("wallHack");
+        if (x == 2 || x == 6)
+          elements.push("pitfall");
+        if (x == 2 && y == 2)
+          elements.push("attack");
+        if (x == 3)
+          elements.push("wall");
+        if (x == 3 && y == 3)
+          elements.push("assist");
+      }
       var self = this;
+      Crafty.c('CustomControls',
+      {
+        __move:
+        {
+          left: false,
+          right: false,
+          up: false,
+          down: false
+        },
+        _speed: null,
+        init: function()
+        {
+          this._speed = {
+            base: 0,
+            x: 0,
+            y: 0
+          };
+        },
+        CustomControls: function(speed)
+        {
+          if (speed) this._speed.base = speed;
+          var move = this.__move;
+          this.bind('KeyDown', function()
+          {
+            //move the player in a direction depending on the booleans
+            if (this.isDown("RIGHT_ARROW")) this._speed.x = this._speed.base;
+            if (this.isDown("LEFT_ARROW")) this._speed.x = -this._speed.base;
+            if (this.isDown("UP_ARROW")) this._speed.y = -this._speed.base;
+            if (this.isDown("DOWN_ARROW")) this._speed.y = this._speed.base;
+          });
+          this.bind('KeyUp', function()
+          {
+            //move the player in a direction depending on the booleans
+            if (!this.isDown("RIGHT_ARROW")) this._speed.x = 0;
+            if (!this.isDown("LEFT_ARROW")) this._speed.x = 0;
+            if (!this.isDown("UP_ARROW")) this._speed.y = 0;
+            if (!this.isDown("DOWN_ARROW")) this._speed.y = 0;
+          });
+          return this;
+        }
+      });
       Crafty.defineScene("level", function()
       {
         Crafty.background("black");
@@ -65,24 +134,30 @@ Object.defineProperties(Game.prototype,
           element.render(self.unit);
           currentLocation += element.width * self.unit;
         });
-        var player1 = Crafty.e("Player, 2D, Canvas, Color, Solid, Fourway, Collision")
+        var player1 = Crafty.e("Player, 2D, Canvas, Color, Fourway, Solid, Gravity, Fourway, Collision")
           .attr(
           {
             x: 0,
-            y: 0,
-            w: 30,
-            h: 30
+            y: 50,
+            w: 75,
+            h: 75
           })
-          .color("green")
-          .fourway(200)
-          .bind("Moved", function()
+          //.CustomControls(400)
+          .checkHits("Wall")
+          .color("white")
+          .fourway(400)
+          .gravity("Floor")
+          .gravityConst(1000)
+          .bind("Moved", function(e)
           {
             if (this.x >= (self.unit / 2))
             {
               Crafty.viewport.x = (this.x - (self.unit / 2)) * -1;
             }
           });
+
       });
+      //});
 
     }
   },
