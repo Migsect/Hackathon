@@ -1,6 +1,7 @@
+"use strict";
+
 require("craftyjs/dist/crafty");
 var Game = require("../Game");
 
-var players = 4;
-var game = new Game("game");
+var game = new Game(document.getElementById("game"));
 game.start();
