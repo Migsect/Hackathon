@@ -252,6 +252,7 @@ Object.defineProperties(BridgeHackElement.prototype,
   {
     value: function(unit)
     {
+      var destroyed = false;
       Crafty.e("Top, 2D, Canvas, Color, Collision")
         .attr(
         {
@@ -269,8 +270,17 @@ Object.defineProperties(BridgeHackElement.prototype,
           w: unit * this.width,
           h: unit * 0.6
         });
+      var ground = Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+        .attr(
+        {
+          x: this.location,
+          y: (unit * 0.8) + 200,
+          w: unit * this.width,
+          h: unit * 0.2
+        })
+        .color("white");
 
-      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+      var pole = Crafty.e("Sign, 2D, Canvas, Solid, Color, Mouse")
         .attr(
         {
           x: this.location,
@@ -279,30 +289,54 @@ Object.defineProperties(BridgeHackElement.prototype,
           h: unit * 0.5
         })
         .color("yellow")
-        .bind("KeyDown", function(e)
+        .bind("MouseUp", function(e)
         {
-          if (e.key == Crafty.keys.SPACE)
+          if (window.preventDuplicateKeyPresses)
+            return;
+
+          window.preventDuplicateKeyPresses = true;
+          window.setTimeout(function()
           {
+            window.preventDuplicateKeyPresses = false;
+          }, 500);
+          if (e.mouseButton == Crafty.mouseButtons.LEFT)
+          {
+            console.log("space hit");
             var answer = window.prompt("Default Question", "Answer");
-            Crafty.pause();
+            //Crafty.pause();
+            //console.log(e.attr());
             if (answer !== null)
             {
-              document.getElementById("game").innerHTML = "yay4";
-              Crafty.pause();
+              // destroyed = true;
+              // console.log(destroyed);
+              // Crafty.canvas._canvas.getContext('2d').
+              // console.log("good job!");
+              // Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+              //   .attr(
+              //   {
+              //     x: this.location,
+              //     y: unit * 0.8,
+              //     w: (unit * this.width),
+              //     h: unit * 5,
+              //     z: 5
+              //   })
+              //   .color("white");
+              ground.attr(
+              {
+                y: this.y + 250
+              });
 
-              Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
-                .attr(
-                {
-                  x: this.location - 200,
-                  y: unit * 0.8,
-                  w: (unit * this.width),
-                  h: unit * 0.2
-                })
-                .color("white");
+              // console.log(ground.attr());
+
             }
           }
         });
-      //sign.On
+      // if (destroyed === true)
+      // {
+      //   pole.destroy();
+      //   destroyed = false;
+      //   console.log(destroyed);
+      // }
 
     }
   }
@@ -351,7 +385,7 @@ Object.defineProperties(WallHackElement.prototype,
           h: unit * 0.2
         })
         .color("green");
-      Crafty.e("Wall, 2D, Canvas, Solid, Color, Collision")
+      var the_wall = Crafty.e("Wall, 2D, Canvas, Solid, Color, Collision")
         .attr(
         {
           x: this.location,
@@ -361,7 +395,7 @@ Object.defineProperties(WallHackElement.prototype,
           z: 0
         })
         .color("blue");
-      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+      Crafty.e("Sign, 2D, Canvas, Solid, Color, Mouse")
         .attr(
         {
           x: this.location,
@@ -370,26 +404,44 @@ Object.defineProperties(WallHackElement.prototype,
           h: 500
         })
         .color("yellow")
-        .bind("KeyDown", function(e)
+        .bind("MouseUp", function(e)
         {
-          if (e.key == Crafty.keys.SPACE)
+          if (window.preventDuplicateKeyPresses)
+            return;
+
+          window.preventDuplicateKeyPresses = true;
+          window.setTimeout(function()
           {
+            window.preventDuplicateKeyPresses = false;
+          }, 500);
+
+          if (e.mouseButton == Crafty.mouseButtons.LEFT)
+          {
+            console.log("space hit");
             var answer = window.prompt("Default Question", "Answer");
-            Crafty.pause();
+            //Crafty.pause();
             if (answer !== null)
             {
-              document.getElementById("game").innerHTML = "yay3";
-              Crafty.pause();
+              // Crafty.canvas._canvas.getContext('2d').
+              // console.log("good job!");
+              // Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+              //   .attr(
+              //   {
+              //     x: this.location,
+              //     y: this.location,
+              //     w: (unit * this.width),
+              //     h: unit * 5,
+              //     z: 5
+              //   })
+              //   .color("white");
+              the_wall.attr(
+              {
+                x: this.location,
+                y: unit * 0.8,
+                w: unit * this.width,
+                h: unit * 0.2
+              });
 
-              Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
-                .attr(
-                {
-                  x: this.location,
-                  y: unit * 0.8,
-                  w: (unit * this.width),
-                  h: unit * 0.2
-                })
-                .color("green");
             }
           }
         });
@@ -440,7 +492,7 @@ Object.defineProperties(AttackElement.prototype,
           h: unit * 0.2
         })
         .color("green");
-      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+      Crafty.e("Sign, 2D, Canvas, Solid, Color, Mouse")
         .attr(
         {
           x: this.location,
@@ -449,26 +501,34 @@ Object.defineProperties(AttackElement.prototype,
           h: unit * 0.5
         })
         .color("yellow")
-        .bind("KeyDown", function(e)
+        .bind("MouseUp", function(e)
         {
-          if (e.key == Crafty.keys.SPACE)
+          if (window.preventDuplicateKeyPresses)
+            return;
+
+          window.preventDuplicateKeyPresses = true;
+          window.setTimeout(function()
           {
+            window.preventDuplicateKeyPresses = false;
+          }, 500);
+          if (e.mouseButton == Crafty.mouseButtons.LEFT)
+          {
+            console.log("space hit");
             var answer = window.prompt("Default Question", "Answer");
-            Crafty.pause();
+            //Crafty.pause();
             if (answer !== null)
             {
-              document.getElementById("game").innerHTML = "yay2";
-              Crafty.pause();
-
+              console.log("good job!");
               Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
                 .attr(
                 {
                   x: this.location,
-                  y: unit * 0.8,
+                  y: this.location, //unit * 0.8,
                   w: (unit * this.width),
-                  h: unit * 0.2
+                  h: unit * 5,
+                  z: 1
                 })
-                .color("green");
+                .color("white");
             }
           }
         });
@@ -510,7 +570,7 @@ Object.defineProperties(AssistElement.prototype,
           w: unit * this.width,
           h: unit * 0.6
         });
-      Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+      var ground = Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
         .attr(
         {
           x: this.location,
@@ -519,7 +579,7 @@ Object.defineProperties(AssistElement.prototype,
           h: unit * 0.2
         })
         .color("green");
-      Crafty.e("Sign, 2D, Canvas, Solid, Color")
+      Crafty.e("Sign, 2D, Canvas, Solid, Color, Mouse")
         .attr(
         {
           x: this.location,
@@ -528,27 +588,42 @@ Object.defineProperties(AssistElement.prototype,
           h: unit * 0.5
         })
         .color("yellow")
-        .bind("KeyDown", function(e)
+        .bind("MouseUp", function(e)
         {
-          if (e.key == Crafty.keys.SPACE)
+          if (window.preventDuplicateKeyPresses)
+            return;
+
+          window.preventDuplicateKeyPresses = true;
+          window.setTimeout(function()
           {
+            window.preventDuplicateKeyPresses = false;
+          }, 500);
+          if (e.mouseButton == Crafty.mouseButtons.LEFT)
+          {
+            console.log("space hit");
             var answer = window.prompt("Default Question", "Answer");
-            Crafty.pause();
+            //Crafty.pause();
             if (answer !== null)
             {
-              document.getElementById("game").innerHTML = "yay";
-              Crafty.pause();
+              // Crafty.canvas._canvas.getContext('2d').
+              console.log("good job!");
               for (var i = 0; i < 8; i++) // maake next 8 straight 
               {
-                Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
-                  .attr(
-                  {
-                    x: this.location,
-                    y: unit * 0.8,
-                    w: (unit * this.width) * 8,
-                    h: unit * 0.2
-                  })
-                  .color("green");
+                console.log("for loop");
+                // Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+                //   .attr(
+                //   {
+                //     x: this.location,
+                //     y: this.location,
+                //     w: (unit * this.width) * 8,
+                //     h: unit * 5,
+                //     z: 1
+                //   })
+                //   .color("white");
+                ground.attr(
+                {
+                  w: this.w * 100
+                });
               }
             }
           }

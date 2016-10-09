@@ -66,11 +66,11 @@ Object.defineProperties(Game.prototype,
         var y = getRandomInt(0, 6);
         if (x === 0 || x == 4)
           elements.push("straight");
-        if (x === 0 || y === 0)
+        if (x === 0 && y === 0)
           elements.push("bridgeHack");
         if (x == 1 || x == 5)
           elements.push("drops");
-        if (x == 1 || y == 1)
+        if (x == 1 && y == 1)
           elements.push("wallHack");
         if (x == 2 || x == 6)
           elements.push("pitfall");
@@ -144,7 +144,7 @@ Object.defineProperties(Game.prototype,
           })
           //.CustomControls(400)
           .checkHits("Wall")
-          .color("white")
+          .color("darkgreen")
           .fourway(400)
           .gravity("Floor")
           .gravityConst(1000)
