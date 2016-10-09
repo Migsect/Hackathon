@@ -1,5 +1,7 @@
 "use strict";
 
+var config = require(process.cwd() + "/config/general.js");
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -7,6 +9,9 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var engines = require("consolidate");
+var session = require("express-session");
+var FileStore = require('session-file-store')(session);
+var uuid = require("uuid");
 
 var index = require("./routes/index");
 var client = require("./routes/client");
@@ -31,6 +36,27 @@ app.use(bodyParser.urlencoded(
 }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+/* Sessions */
+app.use(session(
+{
+  store: new FileStore(
+  {
+    path: "./data/sessions",
+    ttl: 3600
+  }),
+  secret: config.secret ? config.secret : "secrety secret",
+  cookie:
+  {
+    maxAge: config.maxAge ? config.maxAge : 3600000 /* An hour */
+  },
+  resave: true,
+  saveUninitialized: true,
+  genid: function(request)
+  {
+    return uuid.v4();
+  }
+}));
 
 app.use("/", index);
 app.use("/client", client);
@@ -67,12 +93,11 @@ app.use(function(req, res, next)
 app.use(function(err, req, res, next)
 {
   res.status(err.status || 500);
-  res.render('error',
+  res.send(JSON.stringify(
   {
     message: err.message,
-    error:
-    {}
-  });
+    error: err
+  }));
 });
 
 module.exports = app;

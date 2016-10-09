@@ -1,0 +1,25 @@
+div.game-creation {
+  margin: 4px;
+}
+
+div.player-name {
+  margin: 4px;
+}
+
+div.game-list {
+  margin: 4px;
+}
+
+div.game-list-item {
+  margin: 1px;
+  border-color: #00ff00;
+  border-style: solid;
+  border-width: 1px;
+  padding: 2px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+div.game-list-item:hover div {
+  color: #000000;
+}

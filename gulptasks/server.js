@@ -8,6 +8,6 @@ gulp.task("server", function()
   nodemon(
   {
     script: "./bin/www",
-    ext: "js json html"
+    ext: "js html"
   });
 });

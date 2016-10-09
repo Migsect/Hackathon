@@ -31,6 +31,17 @@ Object.defineProperties(Utils,
       return Utils.convertNodeListToArray(document.querySelectorAll(queryString));
     }
   },
+  sendGetRequest:
+  {
+    value: function(url, json)
+    {
+      var request = new XMLHttpRequest();
+      request.open("GET", url, true);
+      request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8; charset=UTF-8');
+      request.send(JSON.stringify(json));
+      return request;
+    }
+  },
   sendPostRequest:
   {
     /**

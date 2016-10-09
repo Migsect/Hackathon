@@ -3,10 +3,23 @@
 
 <head>
   <title>Games - Hackathon</title>
-</head>
+  <link rel="stylesheet" href="/stylesheets/global.css">
+  <link rel="stylesheet" href="/stylesheets/games.css">
 
-<body>
+  <body>
+    <div class="player-name">User: {{playerName}}</div>
+    <div class="game-creation">
+      <input id="input-create-game" type="text" placeholder="Game Name">
+      <button id="button-create-game">Create New Game</button>
+      <button id="button-refresh">Refresh List</button>
+      <a href="/login">
+        <button id="button-rename">Change Name</button>
+      </a>
+    </div>
+    <div id="error-messages"></div>
+    <div id="game-list" class="game-list"></div>
 
-</body>
+    <script type="text/javascript" src="/javascripts/built/games.js"></script>
+  </body>
 
 </html>

@@ -8,7 +8,9 @@ var webpack = require("webpack-stream");
 
 /* The target entry points of files*/
 var targets = [
-  process.cwd() + "/web_modules/entry/client.js"
+  process.cwd() + "/web_modules/entry/client.js",
+  process.cwd() + "/web_modules/entry/login.js",
+  process.cwd() + "/web_modules/entry/games.js"
 ];
 
 /* The folder were built files go*/
