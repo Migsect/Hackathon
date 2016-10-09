@@ -1,15 +1,29 @@
 "use strict";
 /*global Crafty*/
 
-var Game = function(containerId)
+var PathElement = require("./PathElements/PathElement");
+
+var Game = function(container)
 {
   var self = this;
   Object.defineProperties(self,
   {
+    unit:
+    {
+      value: 1000
+    },
     container:
     {
-      value: document.getElementById(containerId)
+      value: container
     }
+  });
+
+  window.addEventListener("resize", function()
+  {
+    console.log("h:", window.innerHeight, "w:", window.innerWidth);
+    // Crafty.viewport.init();
+    //Crafty.viewport.reload();
+    self.scaleToWindow();
   });
 };
 
@@ -20,90 +34,123 @@ window.onresize = function()
 
 Object.defineProperties(Game.prototype,
 {
-  start:
+  addPathElement:
+  {
+    value: function() {
+
+    }
+  },
+  scaleToWindow:
   {
     value: function()
     {
-      var players = 4;
-      var screenWidth = window.screenWidth;
-      var screenHeight = this.container.clientHeight;
-      var player1;
-      var levelWidth = 10000;
-      Crafty.init(screenWidth, screenHeight, this.container);
-      // Crafty.defineScene("HomeScreen", function() {
-      //  Crafty.background("black");
-      //  Crafty.e("2D, DOM, Text, Mouse")
-      //    .attr({ w: 300, h: 20, x: 100, y: 100 })
-      //    .text("Click to start")
-      //    .css({ "text-align": "center"})
-      //    .textFont({size: '20px', weight: 'bold'})
-      //    .textColor("#FFFFFF")
-      //    .bind('Click', function(MouseEvent){
-      //      Crafty.enterScene("Level1");
-      //    });
+      Crafty.viewport.scale(window.innerHeight / this.unit);
+    }
+  },
+  createLevelScene:
+  {
+    value: function()
+    {
+      var elements = ["straight", "straight", "straight"];
 
-      //    Crafty.e("2D, DOM, Text")
-      //    .attr({ w:400, h:40, x: 50, y: 50})
-      //    .text("Rein")
-      //    .textFont({size:'130px', weight:'bold'})
-      //    .css({"text-align": "center"})
-      //    .textColor("#FFFFFF");
-      //  });
-
-      Crafty.defineScene("Level1", function()
+      var self = this;
+      Crafty.defineScene("level", function()
       {
         Crafty.background("black");
-        Crafty.e("Top,2D, Canvas, Color")
+        var currentLocation = 0;
+        elements.forEach(function(e)
+        {
+          console.log("Poop", e);
+          var element = new PathElement[e](currentLocation);
+          element.render(self.unit);
+          currentLocation += element.width * self.unit;
+        });
+        var player1 = Crafty.e("Player, 2D, Canvas, Color, Solid, Fourway, Collision")
           .attr(
           {
             x: 0,
-            y: 0,
-            w: 400,
-            h: screenHeight * 0.2,
-            z: 1
-          })
-          .color("blue");
-        Crafty.e("Middle, 2D, Canvas, Color, Collision")
-          .attr(
-          {
-            x: 0,
-            y: screenHeight * 0.2,
-            w: 400,
-            h: screenHeight * 0.6,
-            z: 1
-          })
-          .color("red");
-        Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
-          .attr(
-          {
-            x: 0,
-            y: (screenHeight * 0.2) + (screenHeight * 0.6),
-            w: 400,
-            h: (screenHeight * 0.2),
-            z: 1
-          })
-          .color("green");
-        player1 = Crafty.e("Player, 2D, Canvas, Color, Solid, Fourway, Gravity, Collision")
-          .attr(
-          {
-            x: 20,
             y: 0,
             w: 30,
             h: 30
           })
-          .color("black")
+          .color("green")
           .fourway(200)
-          .gravity("Floor")
           .bind("Moved", function()
           {
-            if (this.x >= (screenWidth / 2))
+            if (this.x >= (self.unit / 2))
             {
-              Crafty.viewport.x = (this.x - (screenWidth / 2)) * -1;
+              Crafty.viewport.x = (this.x - (self.unit / 2)) * -1;
             }
           });
       });
 
-      Crafty.enterScene("Level1");
+    }
+  },
+  start:
+  {
+    value: function()
+    {
+      var player1;
+      Crafty.init(this.container);
+
+      var self = this;
+      this.createLevelScene();
+      // Crafty.defineScene("level", function()
+      // {
+      //   Crafty.background("black");
+      //   Crafty.e("Top,2D, Canvas, Color")
+      //     .attr(
+      //     {
+      //       x: 0,
+      //       y: 0,
+      //       w: 400,
+      //       h: self.unit * 0.2,
+      //       z: 1
+      //     })
+      //     .color("blue");
+      //   Crafty.e("Middle, 2D, Canvas, Color, Collision")
+      //     .attr(
+      //     {
+      //       x: 0,
+      //       y: self.unit * 0.2,
+      //       w: 400,
+      //       h: self.unit * 0.6,
+      //       z: 1
+      //     })
+      //     .color("red");
+      //   Crafty.e("Floor, 2D, Canvas, Solid, Color, Collision")
+      //     .attr(
+      //     {
+      //       x: 0,
+      //       y: (self.unit * 0.2) + (self.unit * 0.6),
+      //       w: 400,
+      //       h: (self.unit * 0.2),
+      //       z: 1
+      //     })
+      //     .color("green");
+      //   player1 = Crafty.e("Player, 2D, Canvas, Color, Solid, Fourway, Gravity, Collision")
+      //     .attr(
+      //     {
+      //       x: 20,
+      //       y: 0,
+      //       w: 30,
+      //       h: 30
+      //     })
+      //     .color("black")
+      //     .fourway(200)
+      //     .gravity("Floor")
+      //     .bind("Moved", function()
+      //     {
+      //       if (this.x >= (self.unit / 2))
+      //       {
+      //         Crafty.viewport.x = (this.x - (self.unit / 2)) * -1;
+      //       }
+      //     });
+      // });
+
+      Crafty.enterScene("level");
+
+      // this.scaleToWindow();
 
       function load_scene(scene, duration)
       {
@@ -148,7 +195,5 @@ Object.defineProperties(Game.prototype,
     }
   }
 });
-
-var game = new Game("some-id");
 
 module.exports = Game;
