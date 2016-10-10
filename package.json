@@ -36,6 +36,7 @@
     "handlebars": "^4.0.5",
     "handlebars-loader": "^1.4.0",
     "hbs": "~4.0.0",
+    "matter-js": "^0.10.0",
     "morgan": "~1.7.0",
     "serve-favicon": "~2.3.0",
     "session-file-store": "^0.2.1",
