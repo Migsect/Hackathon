@@ -92,7 +92,8 @@
 	        options:
 	        {
 	          width: container.offsetWidth,
-	          height: container.offsetHeight
+	          height: container.offsetHeight,
+	          hasBounds: true
 	        }
 	      })
 	    },
@@ -134,27 +135,39 @@
 	  {
 	    value: function(width, height)
 	    {
-	      /* Storing the previous width and height */
-	      var previousWidth = this.render.canvas.width;
-	      var previousHeight = this.render.canvas.height;
 
 	      /* Getting the bounds */
 	      var min = this.render.bounds.min;
 	      var max = this.render.bounds.max;
+
+	      /* Calculating the current size of the bounds */
 	      var size = {
 	        x: max.x - min.x,
 	        y: max.y - min.y
 	      };
+	      /* Calculating the current center of the bounds */
 	      var oldCenter = {
-	        x: size.x + min.x,
-	        y: size.y + min.y
+	        x: (size.x / 2) + min.x,
+	        y: (size.y / 2) + min.y
 	      };
 
 	      /* Setting the new width */
 	      this.render.canvas.width = width;
 	      this.render.canvas.height = height;
 
-	      this.moveCameraLocation(oldCenter.x, oldCenter.y);
+	      // /* Setting the new bounds */
+	      console.log("x:", (max.x - min.x) - width, "y:", (max.y - min.y) - height);
+	      console.log("min:", min, "max:", max);
+	      World.add(this.world, Bodies.rectangle(min.x, min.y, max.x - min.x, max.y - min.y,
+	      {
+	        isStatic: true,
+	        pixelRatio: 1,
+	        showBounds: false
+	      }));
+	      max.x = width + min.x;
+	      max.y = height + min.y;
+
+	      // this.moveCameraLocation(oldCenter);
 	    }
 	  },
 	  resizeToContainer:
@@ -167,36 +180,39 @@
 	  },
 	  getCameraLocation:
 	  {
-	    value: function() {
-
-	    }
-	  },
-	  moveCameraLocation:
-	  {
-	    /**
-	     * Centers the camera on the specified coordinate
-	     * 
-	     * @param  {Number} xCoord The x position of the camera
-	     * @param  {Number} yCoord The y position of the camera
-	     */
-	    value: function(xCoord, yCoord)
+	    value: function()
 	    {
-	      console.log(this.render.bounds);
 	      var min = this.render.bounds.min;
 	      var max = this.render.bounds.max;
 	      var size = {
 	        x: max.x - min.x,
 	        y: max.y - min.y
 	      };
-	      this.render.bounds.min = {
-	        x: xCoord - size.x / 2,
-	        y: yCoord - size.y / 2
+	      return {
+	        x: (size.x / 2) + min.x,
+	        y: (size.y / 2) + min.y
 	      };
-	      this.render.bounds.max = {
-	        x: xCoord + size.x / 2,
-	        y: yCoord + size.y / 2
+	    }
+	  },
+	  moveCameraLocation:
+	  {
+	    /**
+	     * Centers the camera on the specified coordinate.
+	     * 
+	     * @param  {Vector} location The position of the camera to center on.
+	     */
+	    value: function(location)
+	    {
+	      var bounds = this.render.bounds;
+	      var current = this.getCameraLocation();
+	      var translateVector = {
+	        x: current.x - location.x,
+	        y: current.y - location.y
 	      };
 
+	      console.log("Current:", current, "Towards:", location);
+	      console.log("Translate:", translateVector);
+	      Matter.Bounds.translate(bounds, translateVector);
 	    }
 	  }
 	});
